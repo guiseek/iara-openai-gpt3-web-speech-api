@@ -13,7 +13,6 @@ const transcriptOutput =
 
 function generatePrompt(input: string) {
   return `
-  <hr />
   Human: ${input}
   AI:`
 }
@@ -27,16 +26,25 @@ if (talkButton && transcriptOutput) {
     recognition.lang = 'pt-BR'
     recognition.continuous = false
 
+    recognition.onspeechstart = () => {
+      talkButton.innerText = 'Falando...'
+      talkButton.disabled = true
+    }
+
+    recognition.onspeechend = () => {
+      talkButton.innerText = 'Enviando pergunta'
+    }
+
     recognition.onresult = async (ev) => {
       const {transcript} = ev.results[0][0]
 
-      transcriptOutput.innerText =
-        transcriptOutput.innerText + generatePrompt(transcript)
+      transcriptOutput.innerHTML =
+        transcriptOutput.innerHTML + generatePrompt(transcript)
 
       const completion = await openai.createCompletion({
         model: 'text-davinci-003',
         temperature: 0.9,
-        max_tokens: 150,
+        max_tokens: 1000,
         top_p: 1.0,
         frequency_penalty: 0.0,
         presence_penalty: 0.9,
@@ -49,7 +57,16 @@ if (talkButton && transcriptOutput) {
       utter.lang = 'pt-BR'
       synthesis.speak(utter)
 
-      transcriptOutput.innerText = transcriptOutput.innerText + ` ${text}`
+      transcriptOutput.innerHTML = transcriptOutput.innerHTML + ` ${text}  <hr />`
+
+      utter.onstart = () => {
+        talkButton.innerText = 'Aguarde ela terminar de falar...'
+      }
+      
+      utter.onend = () => {
+        talkButton.innerText = 'Falar'
+        talkButton.disabled = false
+      }
     }
   }
 }
