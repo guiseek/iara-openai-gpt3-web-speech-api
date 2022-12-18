@@ -1,0 +1,26 @@
+:root {
+  font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 400;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+html, body {
+  height: 100%;
+}
+body {
+  display: grid;
+  justify-content: center;
+}
+
+main {
+  width: 600px;
+
+  output {
+    display: block;
+    white-space: pre-line;
+  }
+}
