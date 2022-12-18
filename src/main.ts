@@ -7,69 +7,67 @@ const configuration = new Configuration({
 })
 const openai = new OpenAIApi(configuration)
 
-const talkButton = document.querySelector<HTMLButtonElement>('#talk')
-const transcriptOutput =
-  document.querySelector<HTMLOutputElement>('#transcript')
+const createConfig = (prompt: string) => ({
+  model: 'text-davinci-003',
+  frequency_penalty: 0.0,
+  presence_penalty: 0.9,
+  temperature: 0.9,
+  max_tokens: 3000,
+  stop: [' Human:', ' AI:'],
+  top_p: 1.0,
+  prompt,
+})
 
-function generatePrompt(input: string) {
+const prompt = (input: string) => {
   return `
   Human: ${input}
   AI:`
 }
 
-if (talkButton && transcriptOutput) {
-  transcriptOutput.innerHTML = localStorage.getItem('conversation') ?? ''
+const button = document.querySelector('button')
+const output = document.querySelector('output')
 
-  const recognition = speechRecognition
-  const synthesis = speechSynthesis
+if (button && output) {
+  output.innerHTML = localStorage.getItem('conversation') ?? ''
 
-  talkButton.onclick = () => {
-    recognition.start()
-    recognition.lang = 'pt-BR'
-    recognition.continuous = false
+  button.onclick = () => {
+    speechRecognition.start()
+    speechRecognition.lang = 'pt-BR'
+    speechRecognition.continuous = false
 
-    recognition.onspeechstart = () => {
-      talkButton.innerText = 'Estou te ouvindo'
-      talkButton.disabled = true
+    speechRecognition.onspeechstart = () => {
+      button.innerText = 'Estou te ouvindo'
+      button.disabled = true
     }
 
-    recognition.onspeechend = () => {
-      talkButton.innerText = 'Enviando pergunta'
+    speechRecognition.onspeechend = () => {
+      button.innerText = 'Enviando pergunta'
     }
 
-    recognition.onresult = async (ev) => {
+    speechRecognition.onresult = async (ev) => {
       const {transcript} = ev.results[0][0]
 
-      transcriptOutput.innerHTML =
-        transcriptOutput.innerHTML + generatePrompt(transcript)
+      output.innerHTML = output.innerHTML + prompt(transcript)
 
-      const completion = await openai.createCompletion({
-        model: 'text-davinci-003',
-        temperature: 0.9,
-        max_tokens: 3000,
-        top_p: 1.0,
-        frequency_penalty: 0.0,
-        presence_penalty: 0.9,
-        stop: [' Human:', ' AI:'],
-        prompt: generatePrompt(transcript),
-      })
+      const {text} = await openai
+        .createCompletion(createConfig(prompt(transcript)))
+        .then(({data}) => data.choices[0])
 
-      const {text} = completion.data.choices[0]
       const utter = new SpeechSynthesisUtterance(text)
       utter.lang = 'pt-BR'
-      synthesis.speak(utter)
 
-      transcriptOutput.innerHTML =
-        transcriptOutput.innerHTML + ` ${text}  <hr />`
+      speechSynthesis.speak(utter)
+
+      output.innerHTML = output.innerHTML + ` ${text}  <hr />`
 
       utter.onstart = () => {
-        talkButton.innerText = 'Seja educado e termine de ouvir'
+        button.innerText = 'Seja educado e termine de ouvir'
       }
 
       utter.onend = () => {
-        talkButton.disabled = false
-        talkButton.innerText = 'Clique para começar a falar'
-        localStorage.setItem('conversation', transcriptOutput.innerHTML)
+        button.disabled = false
+        button.innerText = 'Clique para começar a falar'
+        localStorage.setItem('conversation', output.innerHTML)
       }
     }
   }
