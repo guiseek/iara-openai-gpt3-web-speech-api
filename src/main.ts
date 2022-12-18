@@ -18,6 +18,8 @@ function generatePrompt(input: string) {
 }
 
 if (talkButton && transcriptOutput) {
+  transcriptOutput.innerHTML = localStorage.getItem('conversation') ?? ''
+
   const recognition = speechRecognition
   const synthesis = speechSynthesis
 
@@ -27,7 +29,7 @@ if (talkButton && transcriptOutput) {
     recognition.continuous = false
 
     recognition.onspeechstart = () => {
-      talkButton.innerText = 'Falando...'
+      talkButton.innerText = 'Estou te ouvindo'
       talkButton.disabled = true
     }
 
@@ -44,7 +46,7 @@ if (talkButton && transcriptOutput) {
       const completion = await openai.createCompletion({
         model: 'text-davinci-003',
         temperature: 0.9,
-        max_tokens: 1000,
+        max_tokens: 3000,
         top_p: 1.0,
         frequency_penalty: 0.0,
         presence_penalty: 0.9,
@@ -57,15 +59,17 @@ if (talkButton && transcriptOutput) {
       utter.lang = 'pt-BR'
       synthesis.speak(utter)
 
-      transcriptOutput.innerHTML = transcriptOutput.innerHTML + ` ${text}  <hr />`
+      transcriptOutput.innerHTML =
+        transcriptOutput.innerHTML + ` ${text}  <hr />`
 
       utter.onstart = () => {
-        talkButton.innerText = 'Aguarde ela terminar de falar...'
+        talkButton.innerText = 'Seja educado e termine de ouvir'
       }
-      
+
       utter.onend = () => {
-        talkButton.innerText = 'Falar'
         talkButton.disabled = false
+        talkButton.innerText = 'Clique para começar a falar'
+        localStorage.setItem('conversation', transcriptOutput.innerHTML)
       }
     }
   }
