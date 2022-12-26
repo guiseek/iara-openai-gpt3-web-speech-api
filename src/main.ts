@@ -18,6 +18,9 @@ const createConfig = (prompt: string) => ({
   prompt,
 })
 
+speechRecognition.lang = 'pt-BR'
+speechRecognition.continuous = false
+
 const prompt = (input: string) => {
   return `
 Human: ${input}
@@ -84,8 +87,6 @@ if (button && output && select && form) {
 
   button.onclick = () => {
     speechRecognition.start()
-    speechRecognition.lang = 'pt-BR'
-    speechRecognition.continuous = false
 
     speechRecognition.onspeechstart = () => {
       button.innerText = 'Estou te ouvindo'

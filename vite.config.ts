@@ -1,8 +1,8 @@
-import { defineConfig } from 'vite'
+import {defineConfig} from 'vite'
 
 export default defineConfig({
   ssr: {
-    target: 'webworker'
+    target: 'webworker',
   },
-  envPrefix: 'OPENAI_'
+  envPrefix: 'OPENAI_',
 })

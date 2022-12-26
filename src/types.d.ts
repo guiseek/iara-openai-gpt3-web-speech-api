@@ -39,7 +39,6 @@ declare global {
     start: Event
   }
 
-
   interface SpeechRecognition {
     continuous: boolean
     grammars: SpeechGrammarList
