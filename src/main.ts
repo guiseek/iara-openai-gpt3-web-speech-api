@@ -20,15 +20,67 @@ const createConfig = (prompt: string) => ({
 
 const prompt = (input: string) => {
   return `
-  Human: ${input}
-  AI:`
+Human: ${input}
+AI:`
+}
+
+const speak = (message: string, voice?: SpeechSynthesisVoice) => {
+  const utter = new SpeechSynthesisUtterance(message)
+  if (voice) utter.voice = voice
+  utter.lang = 'pt-BR'
+  speechSynthesis.speak(utter)
+  return utter
 }
 
 const button = document.querySelector('button')
 const output = document.querySelector('output')
+const select = document.querySelector('select')
+const form = document.querySelector('form')
 
-if (button && output) {
+if (button && output && select && form) {
   output.innerHTML = localStorage.getItem('conversation') ?? ''
+  const lastHR = output.querySelector('hr:last-of-type')
+  if (lastHR) lastHR.scrollIntoView()
+
+  let voices: SpeechSynthesisVoice[] = []
+
+  speechSynthesis.onvoiceschanged = () => {
+    Array.from(select.children).forEach((child) => child.remove())
+
+    voices = speechSynthesis
+      .getVoices()
+      .filter((voice) => voice.lang === 'pt-BR')
+
+    voices.forEach((voice, index) => {
+      select.add(new Option(voice.name, `${index}`, voice.default))
+    })
+  }
+
+  select.oninput = () => {
+    const voice = voices[select.selectedIndex]
+    speak(voice.name, voice)
+  }
+
+  form.onsubmit = async (e) => {
+    e.preventDefault()
+
+    const data = new FormData(form)
+    const message = data.get('message')
+
+    if (message) {
+      output.innerHTML = output.innerHTML + prompt(message.toString())
+
+      const {text} = await openai
+        .createCompletion(createConfig(prompt(message.toString())))
+        .then(({data}) => data.choices[0])
+
+      output.innerHTML = output.innerHTML + ` ${text}  <hr />`
+
+      localStorage.setItem('conversation', output.innerHTML)
+
+      form.reset()
+    }
+  }
 
   button.onclick = () => {
     speechRecognition.start()
@@ -53,21 +105,24 @@ if (button && output) {
         .createCompletion(createConfig(prompt(transcript)))
         .then(({data}) => data.choices[0])
 
-      const utter = new SpeechSynthesisUtterance(text)
-      utter.lang = 'pt-BR'
+      if (text) {
+        const voice = voices[select.selectedIndex]
+        const utter = speak(text, voice)
 
-      speechSynthesis.speak(utter)
+        output.innerHTML = output.innerHTML + ` ${text}  <hr />`
 
-      output.innerHTML = output.innerHTML + ` ${text}  <hr />`
+        utter.onstart = () => {
+          button.innerText = 'Seja educado e termine de ouvir'
 
-      utter.onstart = () => {
-        button.innerText = 'Seja educado e termine de ouvir'
-      }
+          const lastHR = output.querySelector('hr:last-of-type')
+          if (lastHR) lastHR.scrollIntoView({behavior: 'smooth'})
+        }
 
-      utter.onend = () => {
-        button.disabled = false
-        button.innerText = 'Clique para começar a falar'
-        localStorage.setItem('conversation', output.innerHTML)
+        utter.onend = () => {
+          button.disabled = false
+          button.innerText = 'Clique para começar a falar'
+          localStorage.setItem('conversation', output.innerHTML)
+        }
       }
     }
   }
