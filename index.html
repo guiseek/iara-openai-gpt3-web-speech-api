@@ -4,23 +4,23 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/@picocss/pico@latest/css/pico.classless.min.css"
+    />
     <title>OpenAI + Web Speech API</title>
   </head>
   <body>
     <main>
-
       <section>
         <output id="transcript"></output>
         <div>
           <button id="talk" type="button">Clique para começar a falar</button>
-          
-          <label>
-            Voz:
-            <select name="voice" id="voice"> </select>  
-          </label>
+
+          <select name="voice" id="voice"></select>
         </div>
       </section>
-      
+
       <fieldset>
         <legend>Você também pode digitar</legend>
         <form>
@@ -28,7 +28,6 @@
           <button>Enviar</button>
         </form>
       </fieldset>
-    
     </main>
     <script type="module" src="/src/main.ts"></script>
   </body>

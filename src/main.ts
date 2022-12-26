@@ -18,9 +18,6 @@ const createConfig = (prompt: string) => ({
   prompt,
 })
 
-speechRecognition.lang = 'pt-BR'
-speechRecognition.continuous = false
-
 const prompt = (input: string) => {
   return `
 Human: ${input}
@@ -46,6 +43,7 @@ if (button && output && select && form) {
   if (lastHR) lastHR.scrollIntoView()
 
   let voices: SpeechSynthesisVoice[] = []
+  let voice: SpeechSynthesisVoice
 
   speechSynthesis.onvoiceschanged = () => {
     Array.from(select.children).forEach((child) => child.remove())
@@ -54,14 +52,20 @@ if (button && output && select && form) {
       .getVoices()
       .filter((voice) => voice.lang === 'pt-BR')
 
-    voices.forEach((voice, index) => {
-      select.add(new Option(voice.name, `${index}`, voice.default))
+    voices.forEach((v, i) => {
+      select.add(new Option(v.name, `${i}`, v.default))
+      if (v.default) voice = v
     })
   }
 
-  select.oninput = () => {
-    const voice = voices[select.selectedIndex]
-    speak(voice.name, voice)
+  select.onchange = () => {
+    voice = voices[+select.value]
+
+    const utter = new SpeechSynthesisUtterance(voice.name)
+    utter.voice = voice
+    utter.lang = voice.lang
+
+    speechSynthesis.speak(utter)
   }
 
   form.onsubmit = async (e) => {
@@ -86,11 +90,14 @@ if (button && output && select && form) {
   }
 
   button.onclick = () => {
+    speechRecognition.lang = 'pt-BR'
+    speechRecognition.continuous = false
     speechRecognition.start()
 
     speechRecognition.onspeechstart = () => {
       button.innerText = 'Estou te ouvindo'
       button.disabled = true
+      button.ariaBusy = 'true'
     }
 
     speechRecognition.onspeechend = () => {
@@ -107,22 +114,26 @@ if (button && output && select && form) {
         .then(({data}) => data.choices[0])
 
       if (text) {
-        const voice = voices[select.selectedIndex]
-        const utter = speak(text, voice)
-
         output.innerHTML = output.innerHTML + ` ${text}  <hr />`
+        localStorage.setItem('conversation', output.innerHTML)
+
+        const lastHR = output.querySelector('hr:last-of-type')
+        if (lastHR) lastHR.scrollIntoView({behavior: 'smooth'})
+
+        const utter = new SpeechSynthesisUtterance(text)
+        utter.voice = voice
+        utter.lang = voice.lang
+        
+        window.speechSynthesis.speak(utter)
 
         utter.onstart = () => {
           button.innerText = 'Seja educado e termine de ouvir'
-
-          const lastHR = output.querySelector('hr:last-of-type')
-          if (lastHR) lastHR.scrollIntoView({behavior: 'smooth'})
         }
 
         utter.onend = () => {
           button.disabled = false
+          button.ariaBusy = 'false'
           button.innerText = 'Clique para começar a falar'
-          localStorage.setItem('conversation', output.innerHTML)
         }
       }
     }

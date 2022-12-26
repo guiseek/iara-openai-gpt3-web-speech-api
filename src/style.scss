@@ -23,21 +23,23 @@ main {
   output {
     display: block;
     white-space: pre-line;
-    max-height: calc(100vh - 220px);
+    height: calc(100vh - 580px);
+    max-height: calc(100vh - 580px);
     overflow: auto;
   }
 
   output + div {
     display: flex;
     padding: 16px 0;
+    column-gap: 16px;
     justify-content: space-between;
   }
 }
 
-button:disabled {
-  background-color: white;
-  color: black;
-}
+// button:disabled {
+//   background-color: white;
+//   color: black;
+// }
 
 form {
   display: flex;
