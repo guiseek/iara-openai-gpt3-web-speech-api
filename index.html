@@ -5,16 +5,31 @@
     <link rel="icon" type="image/svg+xml" href="./vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>OpenAI + Web Speech API</title>
-    <script type="module" crossorigin src="./assets/index-1aed6b92.js"></script>
-    <link rel="stylesheet" href="./assets/index-ffedbe29.css">
+    <script type="module" crossorigin src="./assets/index-d4d69b69.js"></script>
+    <link rel="stylesheet" href="./assets/index-df09ba6c.css">
   </head>
   <body>
     <main>
 
       <section>
         <output id="transcript"></output>
-        <button id="talk" type="button">Clique para começar a falar</button>
+        <div>
+          <button id="talk" type="button">Clique para começar a falar</button>
+          
+          <label>
+            Voz:
+            <select name="voice" id="voice"> </select>  
+          </label>
+        </div>
       </section>
+      
+      <fieldset>
+        <legend>Você também pode digitar</legend>
+        <form>
+          <textarea name="message" required rows="10"></textarea>
+          <button>Enviar</button>
+        </form>
+      </fieldset>
     
     </main>
     
