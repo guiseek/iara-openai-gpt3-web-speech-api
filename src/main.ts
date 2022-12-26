@@ -24,14 +24,6 @@ Human: ${input}
 AI:`
 }
 
-const speak = (message: string, voice?: SpeechSynthesisVoice) => {
-  const utter = new SpeechSynthesisUtterance(message)
-  if (voice) utter.voice = voice
-  utter.lang = 'pt-BR'
-  speechSynthesis.speak(utter)
-  return utter
-}
-
 const button = document.querySelector('button')
 const output = document.querySelector('output')
 const select = document.querySelector('select')
@@ -123,7 +115,7 @@ if (button && output && select && form) {
         const utter = new SpeechSynthesisUtterance(text)
         utter.voice = voice
         utter.lang = voice.lang
-        
+
         window.speechSynthesis.speak(utter)
 
         utter.onstart = () => {
